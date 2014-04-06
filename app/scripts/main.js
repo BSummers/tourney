@@ -70,6 +70,8 @@ var bracket = function(options) {
 		var troot = tree.parse({id: 1});
 		console.log(troot);
 		//debugger;
+		this.entrants = vars.entrants;
+		this.size = vars.size;
 
 
 	};
@@ -90,8 +92,6 @@ $('#generate').click(function () {
 	// clear round 1
 	$('.round-1').empty();
 
-
-debugger;
 	for (var i = 0; i < thisBracket.entrants.length; i += 2) {
 		var matchData = [{name:thisBracket.entrants[i], number:i+1 }, {name:thisBracket.entrants[i+1], number:i+2 }];
 		//Get the HTML from the template   in the script tag
