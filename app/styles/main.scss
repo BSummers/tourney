@@ -1,0 +1,186 @@
+$icon-font-path: "/bower_components/bootstrap-sass-official/vendor/assets/fonts/bootstrap/";
+
+$grid-columns:              16;
+$grid-gutter-width:         10px;
+
+// bower:scss
+@import 'bootstrap-sass-official/vendor/assets/stylesheets/bootstrap.scss';
+// endbower
+
+.browsehappy {
+    margin: 0.2em 0;
+    background: #ccc;
+    color: #000;
+    padding: 0.2em 0;
+}
+
+/* Space out content a bit */
+body {
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+/* Everything but the jumbotron gets side spacing for mobile first views */
+.header,
+.marketing,
+.footer {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/* Custom page header */
+.header {
+    border-bottom: 1px solid #e5e5e5;
+
+    /* Make the masthead heading the same height as the navigation */
+    h3 {
+        margin-top: 0;
+        margin-bottom: 0;
+        line-height: 40px;
+        padding-bottom: 19px;
+    }
+}
+
+/* Custom page footer */
+.footer {
+    padding-top: 19px;
+    color: #777;
+    border-top: 1px solid #e5e5e5;
+}
+
+.container-narrow > hr {
+    margin: 30px 0;
+}
+
+/* Main marketing message and sign up button */
+.jumbotron {
+    text-align: center;
+    border-bottom: 1px solid #e5e5e5;
+    .btn {
+        font-size: 21px;
+        padding: 14px 24px;
+    }
+}
+
+/* Supporting marketing content */
+.marketing {
+    margin: 40px 0;
+    p + h4 {
+        margin-top: 28px;
+    }
+}
+
+/* Responsive: Portrait tablets and up */
+@media screen and (min-width: 768px) {
+    .container {
+        xmax-width: 730px;
+    }
+
+    /* Remove the padding we set earlier */
+    .header,
+    .marketing,
+    .footer {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    /* Space out the masthead */
+    .header {
+        margin-bottom: 30px;
+    }
+
+    /* Remove the bottom border on the jumbotron for visual effect */
+    .jumbotron {
+        border-bottom: 0;
+    }
+}
+
+#bracket { }
+#bracket[data-size="16"] { width: 100%; }
+#bracket[data-size="32"] { width: 200%; }
+
+.round {
+    @include make-row(1);
+    padding-bottom: 5px;
+}
+
+.match {
+    @include make-row(1);
+}
+
+
+#bracket[data-size="2"] .round-1 .match { @include make-sm-column(16); }
+
+#bracket[data-size="4"] .round-1 .match { @include make-sm-column(8); }
+#bracket[data-size="4"] .round-2 .match { @include make-sm-column(16); }
+
+#bracket[data-size="8"] .round-1 .match { @include make-sm-column(4); }
+#bracket[data-size="8"] .round-2 .match { @include make-sm-column(8); }
+#bracket[data-size="8"] .round-3 .match { @include make-sm-column(16); }
+
+#bracket[data-size="16"] .round-1 .match { @include make-sm-column(2); }
+#bracket[data-size="16"] .round-2 .match { @include make-sm-column(4); }
+#bracket[data-size="16"] .round-3 .match { @include make-sm-column(8); }
+#bracket[data-size="16"] .round-4 .match { @include make-sm-column(16); }
+
+
+#bracket[data-size="32"] .round-1 .match { @include make-sm-column(1); }
+#bracket[data-size="32"] .round-2 .match { @include make-sm-column(2); }
+#bracket[data-size="32"] .round-3 .match { @include make-sm-column(4); }
+#bracket[data-size="32"] .round-4 .match { @include make-sm-column(8); }
+#bracket[data-size="32"] .round-5 .match { @include make-sm-column(16); }
+#bracket[data-size="32"] .round-6 .match { @include make-sm-column(16); }
+
+
+.team {
+    @include make-sm-column(8);
+    text-align: center;
+    padding: 20px 5px;
+}
+.champion {
+    @include make-row(1);
+    @include make-sm-column(16);
+    .team {
+        @include make-sm-column(16);
+    }
+}
+
+
+.round-1 .team { font-size: .7em; }
+.round-2 .team { font-size: .9em; }
+.round-3 .team { font-size: 1em; }
+.round-4 .team { font-size: 1.1em; }
+.round-5 .team { font-size: 1.3em; }
+
+.team-1 { background-color: #9BC4E5; }
+.team-2 { background-color: #ECEABE; }
+.team-3 { background-color: #C5E384; }
+.team-4 { background-color: #FEFB0A; }
+.team-5 { background-color: #FB5514; }
+.team-6 { background-color: #E115C0; }
+.team-7 { background-color: #DD9475; }
+.team-8 { background-color: #0BC582; }
+.team-9 { background-color: #FEB8C8; }
+.team-10 { background-color: #9E8317; }
+.team-11 { background-color: #FB6AB8; }
+.team-12 { background-color: #847D81; }
+.team-13 { background-color: #FDDB6D; }
+.team-14 { background-color: #FC2847; }
+.team-15 { background-color: #1DACD6; }
+.team-16 { background-color: #F7F1DF; }
+.team-17 { background-color: #9BC4E5; }
+.team-18 { background-color: #ECEABE; }
+.team-19 { background-color: #C5E384; }
+.team-20 { background-color: #FEFB0A; }
+.team-21 { background-color: #FB5514; }
+.team-22 { background-color: #E115C0; }
+.team-23 { background-color: #DD9475; }
+.team-24 { background-color: #0BC582; }
+.team-25 { background-color: #FEB8C8; }
+.team-26 { background-color: #9E8317; }
+.team-27 { background-color: #FB6AB8; }
+.team-28 { background-color: #847D81; }
+.team-29 { background-color: #FDDB6D; }
+.team-30 { background-color: #FC2847; }
+.team-31 { background-color: #1DACD6; }
+.team-32 { background-color: #F7F1DF; }
