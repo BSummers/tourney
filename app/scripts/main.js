@@ -1,6 +1,6 @@
 'use strict';
 /*global Handlebars */
-console.log('loaded.');
+console.log('loading...');
 
 var storage=$.localStorage;
 
@@ -29,7 +29,6 @@ var bracket = function() {
 	this.name = '';
 	this.size = '';
 	this.levels = '';
-	this.matches = '';
 	this.entrants = '';
 	this.randomize = '';
 
@@ -66,6 +65,8 @@ var bracket = function() {
 
 		this.entrants = tournament.entrants;
 		this.randomize = tournament.randomize;
+
+		this.render();
 	};
 
 	this.saveBracket = function() {
@@ -110,22 +111,58 @@ var bracket = function() {
 				position = 1;
 			}
 		}
+
+		var x = 0;
+		for (i = 0; i < this.entrants.length; i += 2) {
+			this.matches[x] = {'opponents':[this.entrants[i],this.entrants[i+1]], 'winner':'', 'child':(this.size/2)+x};
+			x += 1;
+		}
+		console.log(this.matches);
+
 	};
 
 	this.render = function() {
 		$('#bracket').attr('data-size',this.size).show();
 		$('#setup').hide();
-		// clear round 1
-		$('.round-1').empty();
+		// clear rounds
+		$('#bracket').empty();
 
-		for (var i = 0; i < this.entrants.length; i += 2) {
-			var matchData = [{name:this.entrants[i], number:i+1 }, {name:this.entrants[i+1], number:i+2 }];
-			//Get the HTML from the template   in the script tag
-			var matchTemplateSource = $('#match-template').html();
+		for(var i = 1; i <= this.levels; i += 1) {
+			var roundData = {'round': i};
 			//Compile the template
-			var matchTemplateCompiled = Handlebars.compile(matchTemplateSource);
-			$('.round-1').append($(matchTemplateCompiled(matchData)).data('matchData',matchData));
+			var tourneyRoundCompiled = Handlebars.compile($('#tourney-round').html());
+			$('#bracket').append(tourneyRoundCompiled(roundData));
 		}
+
+
+		for (var i = 0; i < this.matches.length; i += 1) {
+			if(this.matches[i]) {
+				var first = {
+					name : this.matches[i].opponents[0],
+					number : $.inArray(this.matches[i].opponents[0],this.entrants),
+					winner : ((this.matches[i].winner === 0) ? true : false)
+				};
+
+				var second = {
+					name : this.matches[i].opponents[1],
+					number : $.inArray(this.matches[i].opponents[1],this.entrants),
+					winner : ((this.matches[i].winner === 1) ? true : false)
+				};
+				
+				var resolved=false;
+				if(this.matches[i].winner !== false) {
+					resolved=true;
+				}
+
+				var matchData = {'matchnumber': i, 'opponents': [first,second], 'resolved': resolved, 'child': this.matches[i].child};
+				//Compile the template
+				var matchTemplateCompiled = Handlebars.compile($('#match-template').html());
+				$('.round-1').append($(matchTemplateCompiled(matchData)).data('matchData',matchData));
+			}
+		}
+
+		this.init($("#bracket"));
+		this.init($("#loadTourneyList"));
 	};
 
 	this.create = function(options) {
@@ -144,7 +181,9 @@ var bracket = function() {
 
 		// calculate levels and number of matches to be played
 		this.levels = Math.log(this.size) / Math.log(2);
-		this.matches = this.size - 1;
+		this.matches = new Array((this.size - 1));
+
+
 
 		if(this.randomize) { this.shuffle(); }
 		if(this.entrants.length < this.size) { this.addByes(); }
@@ -152,30 +191,53 @@ var bracket = function() {
 
 		this.saveBracket();
 	};
+
+
 };
+
+
+bracket.prototype = {
+	events: {
+		'click .match'  : 'matchWinner',
+		'click .loadTournament' : 'loadTournament',
+		'click .removeTournament' : 'removeTournament'
+	},
+	init: function(elem){
+		this.$elem = $(elem).eventralize(this.events, this);
+	},
+	destroy: function() {
+		this.$elem.uneventralize(this.events);
+	},
+	//All functions are passed an extended 'event' object
+	matchWinner  : function(event) {
+		var match = this.matches[$(event.currentTarget).data('match')];
+
+		//Compile the template
+		var matchDecideCompiled = Handlebars.compile($('#match-decide').html());
+
+		$('#matchWinner .modal-body').empty().append(matchDecideCompiled(match));
+		$('#matchWinner').modal('show');
+	},
+	loadTournament : function(event) {
+		this.loadBracket($(this).data('target'));
+	},
+	removeTournament : function(event) {
+		event.stopPropagation();
+		storage.remove($(this).data('target'));
+		loadLocalTournaments();
+	}
+};
+
 
 $('#newTournament').click(function () {
 	$('#setup').show();
 	$('#bracket').hide();
 });
 
-$('body').on('click', 'a.loadTournament', function() {
-	var thisBracket = new bracket();
-	thisBracket.loadBracket($(this).data('target'));
-	thisBracket.render();
-});
-
-$('body').on('click', 'a.removeTournament', function() {
-	event.stopPropagation();
-	storage.remove($(this).data('target'));
-	loadLocalTournaments();
-});
-
 $('#generate').click(function () {
 	var name = $('#tName').val();
 	var entrants = $('#entrants').val().match(/[^\r\n]+/g);
 
-	var thisBracket = new bracket();
 	thisBracket.create({'name':name, 'entrants':entrants, 'randomize':$('#randomize').is(':checked')});
 
 	loadLocalTournaments();
@@ -185,21 +247,12 @@ $('#generate').click(function () {
 
 });
 
-$('body').on('click', 'div.match', function() {
-	var matchData = $(this).data('matchData');
-	//Get the HTML from the template   in the script tag
-	var matchDecideSource = $('#match-decide').html();
-	//Compile the template
-	var matchDecideCompiled = Handlebars.compile(matchDecideSource);
 
-	$('#matchWinner .modal-body').empty().append(matchDecideCompiled(matchData));
 
-	$('#matchWinner').modal('show');
-	//debugger;
-
-});
-
+	var thisBracket = new bracket();
 
 $( document ).ready(function() {
 	loadLocalTournaments();
+	console.log('loaded.');
+	
 });

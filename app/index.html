@@ -98,32 +98,7 @@ Louth</textarea>
 			</div>
 
 			<div id="bracket" class="">
-				<div class="col-xs-16"><h2>Round 1</h2></div>
-				<div class="round round-1"></div>
 
-				<div class="col-xs-16"><h2>Round 2</h2></div>
-				<div class="round round-2"></div>
-
-				<div class="col-xs-16"><h2>Round 3</h2></div>
-				<div class="round round-3"></div>
-
-				<div class="col-xs-16"><h2>Round 4</h2></div>
-				<div class="round round-4"></div>
-
-				<div class="col-xs-16"><h2>Round 5</h2></div>
-				<div class="round round-5"></div>
-
-				<div class="col-xs-16"><h2>Round 6</h2></div>
-				<div class="round round-6"></div>
-
-				<div id="debug">
-					<div class="form-group">
-						<label class="col-md-4 control-label" for="entrants">Debug Output</label>
-						<div class="col-md-4">
-							<textarea class="form-control" id="data-out" rows="8"></textarea>
-						</div>
-					</div>
-				</div>
 			</div>
 
 		</div>
@@ -145,16 +120,16 @@ Louth</textarea>
 </div>
 
 <script id="match-template" type="x-handlebars-template">
-<div class="match unresolved">
-{{#each this}}
+<div class="match match-{{matchnumber}} unresolved" data-match="{{matchnumber}}" data-child="{{child}}">
+{{#each opponents}}
 	<div class="team team-{{number}}">{{name}}</div>
 {{/each}}
 </div>
 </script> 
 
 <script id="match-decide" type="x-handlebars-template">
-{{#each this}}
-	<button class="btn btn-primary" data-dismiss="modal">{{name}}</button>
+{{#each opponents}}
+	<button class="btn btn-primary" data-dismiss="modal">{{this}}</button>
 {{/each}}
 </script> 
 
@@ -167,9 +142,15 @@ Louth</textarea>
 </li>
 </script>
 
+<script id="tourney-round" type="x-handlebars-template">
+	<div class="col-xs-16"><h4>Round {{round}}</h2></div>
+	<div class="round round-{{round}}"></div>
+</script>
+
 		<!-- build:js scripts/vendor.js -->
 		<!-- bower:js -->
 		<script src="bower_components/jquery/dist/jquery.js"></script>
+		<script src="scripts/jquery.eventralize.min.js"></script>
 		<script src="bower_components/jQuery-Storage-API/jquery.storageapi.min.js"></script>
 		<script src="bower_components/handlebars/handlebars.js"></script>
 		<!-- endbower -->
