@@ -1,93 +1,163 @@
 'use strict';
 /*global Handlebars */
-/*global TreeModel */
 console.log('loaded.');
 
-// hint: TreeModel, tree and root are
-// globally available on this page
-var tree = new TreeModel();
+var storage=$.localStorage;
 
-var bracket = function(options) {
+var loadLocalTournaments = function() {
+	var localTournaments = storage.keys();
 
-	var vars = {
-		name: 'Bracket tournament',
-		size: 0,
-		levels: 0,
-		matches: 0,
-		entrants: false,
-		randomize: false,
-		sizes: new Array(1,2,4,8,16,32,64)
-	};
+	var tourneyMenuCompiled = Handlebars.compile($('#tourney-menu').html());
 
-	var root = this;
+	$('#loadTourneyList').empty();
+
+	if (localTournaments.length === 0) {
+		$('#loadTourneyList').append('<li><a href="#">No tournaments found.</a></li>');
+	} else {
+		for (var i = 0; i < localTournaments.length; i += 1) {
+			var tournament = storage.get(localTournaments[i]);
+			var tourneyData = {target:localTournaments[i], name:tournament.name};
+			$('#loadTourneyList').append(tourneyMenuCompiled(tourneyData));
+		}
+	}
+
+};
+
+var bracket = function() {
+
+	this.id = '';
+	this.name = '';
+	this.size = '';
+	this.levels = '';
+	this.matches = '';
+	this.entrants = '';
+	this.randomize = '';
 
 	this.shuffle = function() {
-		var m = vars.entrants.length, t, i;
-		// While there remain elements to shuffle…
+		var m = this.entrants.length, t, i;
+		// While there remain elements to shuffle
 		while (m) {
-			// Pick a remaining element…
+			// Pick a remaining element
 			i = Math.floor(Math.random() * m--);
-			// And swap it with the current element.
-			t = vars.entrants[m];
-			vars.entrants[m] = vars.entrants[i];
-			vars.entrants[i] = t;
+			// And swap it with the current element
+			t = this.entrants[m];
+			this.entrants[m] = this.entrants[i];
+			this.entrants[i] = t;
 		}
 	};
 
-	this.construct = function(options){
-		$.extend(vars , options);
+	this.addByes = function() {
+		while(this.entrants.length < this.size) {
+			this.entrants.reverse();
+			this.entrants.push('Bye');
+		}
+	};
 
-		$.each(vars.sizes, function(index, size) {
-			if (vars.entrants.length <= size) {
-				vars.size = size;
-				return false;
-			}
-		});
+	this.loadBracket = function(bracketID) {
+		this.id = bracketID;
 
-		vars.levels = Math.log(vars.size) / Math.log(2);
-		vars.matches = vars.size - 1;
+		var tournament = storage.get(this.id);
 
-		if(vars.randomize) {
-			this.shuffle();
+		this.name = tournament.name;
+		this.status = tournament.status;
+
+		this.entrants = tournament.entrants;
+		this.randomize = tournament.randomize;
+	};
+
+	this.saveBracket = function() {
+		var tData = {
+			'name': this.name,
+			'entrants':this.entrants,
+			'levels':this.levels,
+			'matches':this.matches,
+			'size':this.size,
+			'randomize':this.randomize,
+			'status':this.status
+		};
+
+		storage.set(this.id, JSON.stringify(tData));
+	};
+
+	this.safeName = function(name) {
+		var safeName = name.replace(/([~!@#$%^&*()_+=`{}\[\]\|\\:;'<>,.\/? ])+/g, '-').replace(/^(-)+|(-)+$/g,'');
+		var oldSafeName = safeName;
+
+		var i = 0;
+
+		var localTournaments = storage.keys();
+
+		while ($.inArray(safeName, localTournaments) !== -1) {
+			i += 1;
+			safeName = oldSafeName + '_' + i;
 		}
 
-		while(vars.entrants.length < vars.size) {
-			vars.entrants.reverse();
-			vars.entrants.push('Bye');
-		}
+		return safeName;
+	};
 
+	this.seed = function() {
+		// seed the first round
 		var position = 0;
-		var tmpEntrants = vars.entrants;
+		var tmpEntrants = this.entrants.slice(0);
 
 		for (var i = 0; i < tmpEntrants.length; i += 1) {
-			vars.entrants[position] = tmpEntrants[i];
+			this.entrants[position] = tmpEntrants[i];
 			position += 2;
-			if (position >= vars.size) {
+			if (position >= this.size) {
 				position = 1;
 			}
 		}
+	}
 
-		var troot = tree.parse({id: 1});
-		console.log(troot);
-		//debugger;
-		this.entrants = vars.entrants;
-		this.size = vars.size;
+	this.create = function(options) {
+		this.name = options.name;
+		this.entrants = options.entrants;
+		this.randomize = options.randomize;
 
+		this.id = this.safeName(this.name);
+		this.status = 1;
 
+		// calculate bracket size from entrants
+		this.size = 1;
+		do {
+			this.size = this.size*2;
+		} while (this.size < this.entrants.length);
+
+		// calculate levels and number of matches to be played
+		this.levels = Math.log(this.size) / Math.log(2);
+		this.matches = this.size - 1;
+
+		if(this.randomize) { this.shuffle(); }
+		if(this.entrants.length < this.size) { this.addByes(); }
+		this.seed();
+
+		this.saveBracket();
 	};
-
-
-	this.construct(options);
 };
 
+$('#newTournament').click(function () {
+	$('#setup').show();
+	$('#bracket').hide();
+});
+
+$('body').on('click', 'a.removeTournament', function() {
+	event.stopPropagation();
+	storage.remove($(this).data('target'));
+	loadLocalTournaments();
+});
+
 $('#generate').click(function () {
+	var name = $('#tName').val();
 	var entrants = $('#entrants').val().match(/[^\r\n]+/g);
 
-	var thisBracket = new bracket({'entrants':entrants, 'randomize':$('#randomize').is(':checked')});
+	var thisBracket = new bracket();
+	thisBracket.create({'name':name, 'entrants':entrants, 'randomize':$('#randomize').is(':checked')});
+
+	loadLocalTournaments();
 
 	console.log(thisBracket);
 
-	$('#bracket').attr('data-size',thisBracket.size);
+	$('#bracket').attr('data-size',thisBracket.size).show();
 
 	// clear round 1
 	$('.round-1').empty();
@@ -116,4 +186,9 @@ $('body').on('click', 'div.match', function() {
 	$('#matchWinner').modal('show');
 	//debugger;
 
+});
+
+
+$( document ).ready(function() {
+	loadLocalTournaments();
 });

@@ -95,7 +95,21 @@ body {
     }
 }
 
-#bracket { }
+
+
+#loadTourneyList li>div { padding: 5px 10px; }
+#loadTourneyList a.loadTournament { xfloat:left; }
+#loadTourneyList a.removeTournament { float:right; }
+
+
+
+
+
+
+
+#setup { display:none; }
+#bracket { display:none; }
+
 #bracket[data-size="16"] { width: 100%; }
 #bracket[data-size="32"] { width: 200%; }
 

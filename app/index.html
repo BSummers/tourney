@@ -32,26 +32,33 @@
 		<div class="container">
 			<div class="header">
 				<ul class="nav nav-pills pull-right">
-					<li class="active"><a href="#">Home</a></li>
-					<li><a href="#">About</a></li>
-					<li><a href="#">Contact</a></li>
+					<li><a href="#" id="newTournament">New Tournament</a></li>
+					<li class="dropdown">
+						<a href="#" class="dropdown-toggle" data-toggle="dropdown">Load Tournament <b class="caret"></b></a>
+						<ul id="loadTourneyList" class="dropdown-menu">
+						</ul>
+					</li>
 				</ul>
 				<h3 class="text-muted">tourney</h3>
 			</div>
 
-			<div id="setup">
+			<div id="setup" class="">
+				<form class="form-horizontal">
+					<fieldset>
+						<!-- Form Name -->
+						<legend>New Tournament Setup</legend>
+						<!-- Textarea -->
+						<div class="form-group">
+							<label for="tName" class="col-md-4 control-label">Tournament Name</label>
+							<div class="col-md-4">
+								<input type="text" class="form-control" id="tName" placeholder="Name">
+							</div>
+						</div>
 
-<form class="form-horizontal">
-<fieldset>
-
-<!-- Form Name -->
-<legend>Tournament Setup</legend>
-
-<!-- Textarea -->
-<div class="form-group">
-  <label class="col-md-4 control-label" for="entrants">Entrants</label>
-  <div class="col-md-4">
-    <textarea class="form-control" id="entrants" name="entrants" rows="8">Jakes
+						<div class="form-group">
+							<label class="col-md-4 control-label" for="entrants">Entrants</label>
+							<div class="col-md-4">
+								<textarea class="form-control" id="entrants" name="entrants" rows="8">Jakes
 Olivere
 Austinus
 Oure
@@ -67,36 +74,30 @@ Iphitos
 Janpier
 Kleitos
 Louth</textarea>
-  </div>
-</div>
+							</div>
+						</div>
 
+						<div class="form-group">
+							<div class="col-md-offset-4 col-md-4">
+								<div class="checkbox">
+									<label>
+										<input type="checkbox" id="randomize" name="randomize" checked="1"> Randomize Seed
+									</label>
+								</div>
+							</div>
+						</div>
 
-  <div class="form-group">
-    <div class="col-md-offset-4 col-md-4">
-      <div class="checkbox">
-        <label>
-          <input type="checkbox" id="randomize" name="randomize" checked="1"> Randomize Seed
-        </label>
-      </div>
-    </div>
-  </div>
-
-<!-- Button -->
-<div class="form-group">
-  <label class="col-md-4 control-label" for="generate"></label>
-  <div class="col-md-4">
-    <button id="generate" name="generate" class="btn btn-primary" type="button">Generate</button>
-  </div>
-</div>
-
-</fieldset>
-</form>
-
-
-
+						<div class="form-group">
+							<label class="col-md-4 control-label" for="generate"></label>
+							<div class="col-md-4">
+								<button id="generate" name="generate" class="btn btn-primary" type="button">Generate</button>
+							</div>
+						</div>
+					</fieldset>
+				</form>
 			</div>
 
-			<div id="bracket">
+			<div id="bracket" class="">
 				<div class="col-xs-16"><h2>Round 1</h2></div>
 				<div class="round round-1"></div>
 
@@ -114,16 +115,15 @@ Louth</textarea>
 
 				<div class="col-xs-16"><h2>Round 6</h2></div>
 				<div class="round round-6"></div>
-			</div>
 
-
-
-
-<textarea class="form-control" id="data-out" rows="8"></textarea>
-
-
-			<div class="footer">
-				<p><span class="glyphicon glyphicon-heart"></span> from the Yeoman team</p>
+				<div id="debug">
+					<div class="form-group">
+						<label class="col-md-4 control-label" for="entrants">Debug Output</label>
+						<div class="col-md-4">
+							<textarea class="form-control" id="data-out" rows="8"></textarea>
+						</div>
+					</div>
+				</div>
 			</div>
 
 		</div>
@@ -133,14 +133,14 @@ Louth</textarea>
 
 <div id="matchWinner" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
   <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        <h4 class="modal-title">Choose winner...</h4>
-      </div>
-      <div class="modal-body">
-      </div>
-    </div><!-- /.modal-content -->
+	<div class="modal-content">
+	  <div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+		<h4 class="modal-title">Choose winner...</h4>
+	  </div>
+	  <div class="modal-body">
+	  </div>
+	</div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->
 </div>
 
@@ -158,9 +158,19 @@ Louth</textarea>
 {{/each}}
 </script> 
 
+<script id="tourney-menu" type="x-handlebars-template">
+<li>
+	<div>
+		<a href="#" class="loadTournament" data-target="{{target}}">{{name}}</a>
+		<a href="#" class="removeTournament" data-target="{{target}}"><span class="glyphicon glyphicon-remove"></span></a>
+	</div>
+</li>
+</script>
+
 		<!-- build:js scripts/vendor.js -->
 		<!-- bower:js -->
 		<script src="bower_components/jquery/dist/jquery.js"></script>
+		<script src="bower_components/jQuery-Storage-API/jquery.storageapi.min.js"></script>
 		<script src="bower_components/handlebars/handlebars.js"></script>
 		<!-- endbower -->
 		<!-- endbuild -->
