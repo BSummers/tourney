@@ -60,6 +60,9 @@ var bracket = function() {
 
 		this.name = tournament.name;
 		this.status = tournament.status;
+		this.size = tournament.size;
+		this.matches = tournament.matches;
+		this.levels = tournament.levels;
 
 		this.entrants = tournament.entrants;
 		this.randomize = tournament.randomize;
@@ -107,7 +110,23 @@ var bracket = function() {
 				position = 1;
 			}
 		}
-	}
+	};
+
+	this.render = function() {
+		$('#bracket').attr('data-size',this.size).show();
+		$('#setup').hide();
+		// clear round 1
+		$('.round-1').empty();
+
+		for (var i = 0; i < this.entrants.length; i += 2) {
+			var matchData = [{name:this.entrants[i], number:i+1 }, {name:this.entrants[i+1], number:i+2 }];
+			//Get the HTML from the template   in the script tag
+			var matchTemplateSource = $('#match-template').html();
+			//Compile the template
+			var matchTemplateCompiled = Handlebars.compile(matchTemplateSource);
+			$('.round-1').append($(matchTemplateCompiled(matchData)).data('matchData',matchData));
+		}
+	};
 
 	this.create = function(options) {
 		this.name = options.name;
@@ -140,6 +159,12 @@ $('#newTournament').click(function () {
 	$('#bracket').hide();
 });
 
+$('body').on('click', 'a.loadTournament', function() {
+	var thisBracket = new bracket();
+	thisBracket.loadBracket($(this).data('target'));
+	thisBracket.render();
+});
+
 $('body').on('click', 'a.removeTournament', function() {
 	event.stopPropagation();
 	storage.remove($(this).data('target'));
@@ -155,23 +180,9 @@ $('#generate').click(function () {
 
 	loadLocalTournaments();
 
-	console.log(thisBracket);
+	thisBracket.render();
 
-	$('#bracket').attr('data-size',thisBracket.size).show();
 
-	// clear round 1
-	$('.round-1').empty();
-
-	for (var i = 0; i < thisBracket.entrants.length; i += 2) {
-		var matchData = [{name:thisBracket.entrants[i], number:i+1 }, {name:thisBracket.entrants[i+1], number:i+2 }];
-		//Get the HTML from the template   in the script tag
-		var matchTemplateSource = $('#match-template').html();
-		//Compile the template
-		var matchTemplateCompiled = Handlebars.compile(matchTemplateSource);
-		$('.round-1').append($(matchTemplateCompiled(matchData)).data('matchData',matchData));
-	}
-
-	//debugger;
 });
 
 $('body').on('click', 'div.match', function() {
