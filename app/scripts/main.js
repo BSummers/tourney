@@ -4,25 +4,6 @@ console.log('loading...');
 
 var storage=$.localStorage;
 
-var loadLocalTournaments = function() {
-	var localTournaments = storage.keys();
-
-	var tourneyMenuCompiled = Handlebars.compile($('#tourney-menu').html());
-
-	$('#loadTourneyList').empty();
-
-	if (localTournaments.length === 0) {
-		$('#loadTourneyList').append('<li><a href="#">No tournaments found.</a></li>');
-	} else {
-		for (var i = 0; i < localTournaments.length; i += 1) {
-			var tournament = storage.get(localTournaments[i]);
-			var tourneyData = {target:localTournaments[i], name:tournament.name};
-			$('#loadTourneyList').append(tourneyMenuCompiled(tourneyData));
-		}
-	}
-
-};
-
 var bracket = function() {
 
 	this.id = '';
@@ -31,6 +12,25 @@ var bracket = function() {
 	this.levels = '';
 	this.entrants = '';
 	this.randomize = '';
+
+	this.loadLocalTournaments = function() {
+		var localTournaments = storage.keys();
+		var tourneyMenuCompiled = Handlebars.compile($('#tourney-menu').html());
+
+		$('#loadTourneyList').empty();
+
+		if (localTournaments.length === 0) {
+			$('#loadTourneyList').append('<li><a href="#">No tournaments found.</a></li>');
+		} else {
+			for (var i = 0; i < localTournaments.length; i += 1) {
+				var tournament = storage.get(localTournaments[i]);
+				var tourneyData = {target:localTournaments[i], name:tournament.name};
+				$('#loadTourneyList').append(tourneyMenuCompiled(tourneyData));
+			}
+		}
+
+		this.init($('#loadTourneyList'));
+	};
 
 	this.shuffle = function() {
 		var m = this.entrants.length, t, i;
@@ -53,7 +53,9 @@ var bracket = function() {
 	};
 
 	this.loadBracket = function(bracketID) {
+		console.log('loading bracket:'+bracketID);
 		this.id = bracketID;
+
 
 		var tournament = storage.get(this.id);
 
@@ -161,8 +163,7 @@ var bracket = function() {
 			}
 		}
 
-		this.init($("#bracket"));
-		this.init($("#loadTourneyList"));
+		this.init($('#bracket'));
 	};
 
 	this.create = function(options) {
@@ -200,7 +201,9 @@ bracket.prototype = {
 	events: {
 		'click .match'  : 'matchWinner',
 		'click .loadTournament' : 'loadTournament',
-		'click .removeTournament' : 'removeTournament'
+		'click .removeTournament' : 'removeTournament',
+		'click #generate' : 'createTournament',
+		'click #newTournament' : 'newTournament'
 	},
 	init: function(elem){
 		this.$elem = $(elem).eventralize(this.events, this);
@@ -219,40 +222,28 @@ bracket.prototype = {
 		$('#matchWinner').modal('show');
 	},
 	loadTournament : function(event) {
-		this.loadBracket($(this).data('target'));
+		this.loadBracket($(event.currentTarget).data('target'));
 	},
 	removeTournament : function(event) {
 		event.stopPropagation();
-		storage.remove($(this).data('target'));
-		loadLocalTournaments();
+		storage.remove($(event.currentTarget).data('target'));
+		this.loadLocalTournaments();
+	},
+	createTournament : function(event) {
+		this.create({'name':$('#tName').val(), 'entrants':$('#entrants').val().match(/[^\r\n]+/g), 'randomize':$('#randomize').is(':checked')});
+		this.loadLocalTournaments();
+		this.render();
+	},
+	newTournament : function(event) {
+		$('#setup').show();
+		$('#bracket').hide();
 	}
 };
 
 
-$('#newTournament').click(function () {
-	$('#setup').show();
-	$('#bracket').hide();
-});
-
-$('#generate').click(function () {
-	var name = $('#tName').val();
-	var entrants = $('#entrants').val().match(/[^\r\n]+/g);
-
-	thisBracket.create({'name':name, 'entrants':entrants, 'randomize':$('#randomize').is(':checked')});
-
-	loadLocalTournaments();
-
-	thisBracket.render();
-
-
-});
-
-
-
-	var thisBracket = new bracket();
+var thisBracket = new bracket();
 
 $( document ).ready(function() {
-	loadLocalTournaments();
+	thisBracket.loadLocalTournaments();
 	console.log('loaded.');
-	
 });
