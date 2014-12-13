@@ -3,6 +3,11 @@ $icon-font-path: "/bower_components/bootstrap-sass-official/vendor/assets/fonts/
 $grid-columns:              16;
 $grid-gutter-width:         10px;
 
+$round-width: 120px;
+$match-height: 80px;
+
+
+
 // bower:scss
 @import 'bootstrap-sass-official/vendor/assets/stylesheets/bootstrap.scss';
 // endbower
@@ -110,17 +115,11 @@ body {
 #setup { display:none; }
 #bracket { display:none; }
 
-#bracket[data-size="16"] { width: 100%; }
+
+/*
+#bracket[data-size="8"] { width: 100%; }
+#bracket[data-size="16"] { width: 150%; }
 #bracket[data-size="32"] { width: 200%; }
-
-.round {
-    @include make-row(1);
-    padding-bottom: 5px;
-}
-
-.match {
-    @include make-row(1);
-}
 
 
 #bracket[data-size="2"] .round-1 .match { @include make-sm-column(16); }
@@ -144,28 +143,106 @@ body {
 #bracket[data-size="32"] .round-4 .match { @include make-sm-column(8); }
 #bracket[data-size="32"] .round-5 .match { @include make-sm-column(16); }
 #bracket[data-size="32"] .round-6 .match { @include make-sm-column(16); }
+*/
 
+
+.round {
+    padding-bottom: 5px;
+    width: $round-width;
+    float:left;
+    position:relative;
+}
+
+#bracket[data-size="2"] .round { width: 50%; }
+#bracket[data-size="4"] .round { width: 33%; }
+#bracket[data-size="8"] .round { width: 25%; }
+#bracket[data-size="16"] .round { width: 20%; }
+#bracket[data-size="32"] .round { width: 16.6%; }
+
+.match {
+    float:left;
+    width: 100%;
+    position:relative;
+    height: $match-height;
+}
 
 .team {
-    @include make-sm-column(8);
     text-align: center;
-    padding: 20px 5px;
+    height: $match-height / 2;
+
+    height: 50%;
+    border: 1px solid white;
+    position: absolute;
+    width: 100%;
 }
-.champion {
-    @include make-row(1);
-    @include make-sm-column(16);
+.team:nth-child(1) { top: 0px; }
+.team:nth-child(2) { bottom: 0px; }
+
+.team.active {
+    border: 1px solid #c0c0c0;
+    background-color: #999;
+}
+
+#bracket[data-size="2"] .round-championship { height: $match-height; }
+#bracket[data-size="4"] .round-championship { height: $match-height * 2; }
+#bracket[data-size="8"] .round-championship { height: $match-height * 4; }
+#bracket[data-size="16"] .round-championship { height: $match-height * 8; }
+#bracket[data-size="32"] .round-championship { height: $match-height * 16; }
+
+.round-championship {
     .team {
-        @include make-sm-column(16);
+        height: 100%;
+        width: 100%;
     }
 }
 
+.versus {
+    font-size: 9px;
+    width: 20px;
+    height: 20px;
+    padding-top: 4px;
 
-.round-1 .team { font-size: .7em; }
-.round-2 .team { font-size: .9em; }
-.round-3 .team { font-size: 1em; }
-.round-4 .team { font-size: 1.1em; }
-.round-5 .team { font-size: 1.3em; }
+    background: #dfdfdf;
+    text-align: center;
+    float: left;
+    position:absolute;
+    top: 50%;
+    left: 50%;
+    margin-left: -10px;
+    margin-top: -10px;
+    border: 1px solid white;
+}
 
+.round-2 .match {
+    height: (($match-height * 2));
+    margin: 0px;
+}
+.round-3 .match {
+    height: (($match-height * 4));
+    margin: 0px;
+}
+
+.round-4 .match {
+    height: (($match-height * 8));
+    margin: 0px;
+}
+.round-5 .match {
+    height: (($match-height * 16));
+    margin: 0px;
+}
+.round-6 .match {
+    height: (($match-height * 32));
+    margin: 0px;
+}
+
+.team div {
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.team { background-color: #c0c0c0; }
+/*
 .team-0 { background-color: #F7F1DF; }
 .team-1 { background-color: #9BC4E5; }
 .team-2 { background-color: #ECEABE; }
@@ -199,3 +276,4 @@ body {
 .team-30 { background-color: #FC2847; }
 .team-31 { background-color: #1DACD6; }
 .team-32 { background-color: #F7F1DF; }
+*/

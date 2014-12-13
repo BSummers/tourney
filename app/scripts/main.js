@@ -28,8 +28,6 @@ var bracket = function() {
 				$('#loadTourneyList').append(tourneyMenuCompiled(tourneyData));
 			}
 		}
-
-		this.init($('#loadTourneyList'));
 	};
 
 	this.shuffle = function() {
@@ -116,11 +114,9 @@ var bracket = function() {
 
 		var x = 0;
 		for (i = 0; i < this.entrants.length; i += 2) {
-			this.matches[x] = {'opponents':[this.entrants[i],this.entrants[i+1]], 'winner':'', 'child':(this.size/2)+x};
+			this.matches[x].opponents = [this.entrants[i],this.entrants[i+1]];
 			x += 1;
 		}
-		console.log(this.matches);
-
 	};
 
 	this.render = function() {
@@ -136,34 +132,72 @@ var bracket = function() {
 			$('#bracket').append(tourneyRoundCompiled(roundData));
 		}
 
+		var tourneyChampionCompiled = Handlebars.compile($('#tourney-champion').html());
+		$('#bracket').append(tourneyChampionCompiled({'round': i+1}));
 
-		for (var i = 0; i < this.matches.length; i += 1) {
-			if(this.matches[i]) {
+
+		for (i = 0; i < this.matches.length; i += 1) {
+			if(this.matches[i].winner && (this.matches[i].child !== 'champion')) {
+				if ((i % 2) == 0) {
+					this.matches[this.matches[i].child].opponents[0] = this.matches[i].winner;
+				} else {
+					this.matches[this.matches[i].child].opponents[1] = this.matches[i].winner;
+				}
+			}
+			if(this.matches[i].opponents) {
+
 				var first = {
 					name : this.matches[i].opponents[0],
-					number : $.inArray(this.matches[i].opponents[0],this.entrants),
-					winner : ((this.matches[i].winner === 0) ? true : false)
+					number : ($.inArray(this.matches[i].opponents[0],this.entrants)) != -1 ? $.inArray(this.matches[i].opponents[0],this.entrants) : ''
 				};
 
 				var second = {
 					name : this.matches[i].opponents[1],
-					number : $.inArray(this.matches[i].opponents[1],this.entrants),
-					winner : ((this.matches[i].winner === 1) ? true : false)
+					number : ($.inArray(this.matches[i].opponents[1],this.entrants)) != -1 ? $.inArray(this.matches[i].opponents[1],this.entrants) : ''
 				};
+
+				if (first.name == 'Bye') { first.number = 'bye'; }
+				if (second.name == 'Bye') { second.number = 'bye'; }
+
+				if (this.matches[i].opponents[0] === this.matches[i].winner) { first.winner = 1; }
+				if (this.matches[i].opponents[1] === this.matches[i].winner) { second.winner = 1; }
 				
 				var resolved=false;
-				if(this.matches[i].winner !== false) {
-					resolved=true;
-				}
 
 				var matchData = {'matchnumber': i, 'opponents': [first,second], 'resolved': resolved, 'child': this.matches[i].child};
 				//Compile the template
 				var matchTemplateCompiled = Handlebars.compile($('#match-template').html());
-				$('.round-1').append($(matchTemplateCompiled(matchData)).data('matchData',matchData));
+				$('.round-'+this.matches[i].round).append($(matchTemplateCompiled(matchData)).data('matchData',matchData));
 			}
 		}
 
-		this.init($('#bracket'));
+		if (this.matches[this.matches.length-1].winner) {
+			var champion = {
+				name : this.matches[this.matches.length-1].winner,
+				number : ($.inArray(this.matches[this.matches.length-1].winner,this.entrants)) != -1 ? $.inArray(this.matches[this.matches.length-1].winner,this.entrants) : ''
+			};
+		} 
+		
+			var champTemplateCompiled = Handlebars.compile($('#champ-template').html());
+			$('.round-championship').append($(champTemplateCompiled(champion)));
+
+	};
+
+	this.clearChildren = function(match) {
+		while($.isNumeric(this.matches[match].child)) {
+			console.log(match);
+			this.matches[match].winner = '';
+			if (this.matches[match].opponents) {
+				this.matches[match].opponents = [];
+			}
+			match = this.matches[match].child;
+		}
+		if (this.matches[match].child === 'champion') {
+			this.matches[match].winner = '';
+			this.matches[match].opponents = [];
+		}
+		this.saveBracket();
+		this.render();
 	};
 
 	this.create = function(options) {
@@ -185,6 +219,35 @@ var bracket = function() {
 		this.matches = new Array((this.size - 1));
 
 
+		var matchesPerRound = this.size / 2;
+		var currentRound = 1;
+		var matchPosition=1;
+		var childMatch = this.size / 2;
+
+		for (var i=1; i<this.size; i+=1) {
+			this.matches[(i-1)] = {};
+
+			this.matches[(i-1)].round = currentRound;
+			this.matches[(i-1)].position = matchPosition;
+			this.matches[(i-1)].winner = '';
+			this.matches[(i-1)].child = childMatch;
+			this.matches[(i-1)].opponents = [];
+
+			if(childMatch === this.size - 1) {
+				this.matches[(i-1)].child = 'champion';
+			}
+
+			if(i%2 === 0) {
+				childMatch += 1;
+			}
+
+			if ((matchPosition/matchesPerRound) === 1) {
+				currentRound+=1;
+				matchesPerRound=matchPosition/2;
+				matchPosition=0;
+			}
+			matchPosition+=1;
+		}
 
 		if(this.randomize) { this.shuffle(); }
 		if(this.entrants.length < this.size) { this.addByes(); }
@@ -194,19 +257,23 @@ var bracket = function() {
 	};
 
 
+	this.init($('body'));
 };
 
 
 bracket.prototype = {
 	events: {
 		'click .match'  : 'matchWinner',
+		'click .setWinner' : 'setWinner',
 		'click .loadTournament' : 'loadTournament',
 		'click .removeTournament' : 'removeTournament',
 		'click #generate' : 'createTournament',
-		'click #newTournament' : 'newTournament'
+		'click #newTournament' : 'newTournament',
+		'mouseover .team' : 'activateTeam',
+		'mouseout .team' : 'deactivateTeam'
 	},
 	init: function(elem){
-		this.$elem = $(elem).eventralize(this.events, this);
+		this.$elem = $(elem).eventralize(this.events, this, 'bracket');
 	},
 	destroy: function() {
 		this.$elem.uneventralize(this.events);
@@ -214,6 +281,7 @@ bracket.prototype = {
 	//All functions are passed an extended 'event' object
 	matchWinner  : function(event) {
 		var match = this.matches[$(event.currentTarget).data('match')];
+		match.matchnumber = $(event.currentTarget).data('match');
 
 		//Compile the template
 		var matchDecideCompiled = Handlebars.compile($('#match-decide').html());
@@ -221,11 +289,45 @@ bracket.prototype = {
 		$('#matchWinner .modal-body').empty().append(matchDecideCompiled(match));
 		$('#matchWinner').modal('show');
 	},
+	setWinner : function(event) {
+		var matchid = $(event.currentTarget).data('match');
+		var winner = $(event.currentTarget).data('team');
+
+
+		this.matches[matchid].winner = winner;
+
+		if (this.matches[matchid].child !== 'champion') {
+			if ((matchid % 2) === 0) {
+				this.matches[this.matches[matchid].child].opponents[0] = winner;
+			} else {
+				this.matches[this.matches[matchid].child].opponents[1] = winner;
+			}
+			this.clearChildren(this.matches[matchid].child);
+		}
+
+		this.saveBracket();
+		this.render();
+
+	},
 	loadTournament : function(event) {
 		this.loadBracket($(event.currentTarget).data('target'));
 	},
+	activateTeam : function(event) {
+		if ($(event.currentTarget).data('team') !== '' && !$(event.currentTarget).hasClass("team-bye")) {
+			$('.team-'+$(event.currentTarget).data('team')).addClass('active');
+		}
+	},
+	deactivateTeam : function(event) {
+		if ($(event.currentTarget).data('team') !== '' && !$(event.currentTarget).hasClass("team-bye")) {
+			$('.team-'+$(event.currentTarget).data('team')).removeClass('active');
+		}
+	},
 	removeTournament : function(event) {
 		event.stopPropagation();
+
+		if(thisBracket.id === $(event.currentTarget).data('target')) {
+			$('#bracket').empty().hide();
+		}
 		storage.remove($(event.currentTarget).data('target'));
 		this.loadLocalTournaments();
 	},
@@ -235,13 +337,14 @@ bracket.prototype = {
 		this.render();
 	},
 	newTournament : function(event) {
+		$('#setup form')[0].reset();
 		$('#setup').show();
 		$('#bracket').hide();
 	}
 };
 
-
 var thisBracket = new bracket();
+thisBracket.loadBracket('b1');
 
 $( document ).ready(function() {
 	thisBracket.loadLocalTournaments();

@@ -120,33 +120,41 @@ Louth</textarea>
 </div>
 
 <script id="match-template" type="x-handlebars-template">
-<div class="match match-{{matchnumber}} unresolved" data-match="{{matchnumber}}" data-child="{{child}}">
+<div class="match match-{{matchnumber}} unresolved clearfix" data-match="{{matchnumber}}" data-child="{{child}}">
 {{#each opponents}}
-	<div class="team team-{{number}}">{{name}}</div>
+	<div class="team team-{{number}}" data-team="{{number}}"><div>{{name}}</div></div>
 {{/each}}
+<div class="versus">vs</div>
 </div>
 </script> 
 
 <script id="match-decide" type="x-handlebars-template">
 {{#each opponents}}
-	<button class="btn btn-primary" data-dismiss="modal">{{this}}</button>
+	<button class="btn btn-primary setWinner" data-match="{{../matchnumber}}" data-team="{{this}}" data-dismiss="modal">{{this}}</button>
 {{/each}}
 </script> 
 
 <script id="tourney-menu" type="x-handlebars-template">
 <li>
 	<div>
-		<a href="#" class="loadTournament" data-target="{{target}}">{{name}}</a>
+		<a href="#" class="loadTournament" data-target="{{target}}">Tournament: {{name}}</a>
 		<a href="#" class="removeTournament" data-target="{{target}}"><span class="glyphicon glyphicon-remove"></span></a>
 	</div>
 </li>
 </script>
 
 <script id="tourney-round" type="x-handlebars-template">
-	<div class="col-xs-16"><h4>Round {{round}}</h2></div>
+	
 	<div class="round round-{{round}}"></div>
 </script>
 
+<script id="tourney-champion" type="x-handlebars-template">
+	<div class="round round-{{round}} round-championship"></div>
+</script>
+
+<script id="champ-template" type="x-handlebars-template">
+	<div class="team team-{{number}}" data-team="{{number}}"><div>{{name}}<br>(Champion)</div></div>
+</script> 
 		<!-- build:js scripts/vendor.js -->
 		<!-- bower:js -->
 		<script src="bower_components/jquery/dist/jquery.js"></script>
